@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Curso PAA - SIU</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS para Exportar a Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- ================= PANTALLA DE INICIO DE SESIÓN ================= -->
+    <div id="loginView" class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 max-w-md w-full">
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 bg-slate-100 text-slate-800 rounded-full mb-3 border border-slate-200">
+                    <i class="fa-solid fa-graduation-cap text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Curso PAA - SIU</h2>
+                <p class="text-xs text-slate-500 mt-1">Acceso restringido para personal autorizado</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Electrónico</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" id="loginEmail" required placeholder="siu.panamaoeste@utp.ac.pa" class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                </div>
+
+                <div id="loginError" class="hidden text-xs text-rose-600 font-medium bg-rose-50 p-2.5 rounded-lg border border-rose-200 text-center"></div>
+
+                <button type="submit" id="btnLogin" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Iniciar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= APLICACIÓN PRINCIPAL (OCULTA HASTA AUTENTICAR) ================= -->
+    <div id="appView" class="hidden min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-slate-900 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-graduation-cap text-3xl text-slate-200"></i>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">Registro Curso PAA (SIU)</h1>
+                        <p class="text-slate-400 text-xs">Sistema de Gestión de Inscritos e Histórico de Cursos</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <span id="userBadge" class="text-xs bg-slate-800 text-slate-200 px-3 py-1.5 rounded-full font-medium mr-1 flex items-center gap-1.5 border border-slate-700">
+                        <i class="fa-solid fa-circle-user text-slate-400"></i>
+                        <span id="userNameText">Cargando...</span>
+                    </span>
+                    
+                    <!-- Botón exclusivo para Administrador SIU -->
+                    <button id="btnCrearUsuarioModal" onclick="toggleUserModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5 border border-slate-700">
+                        <i class="fa-solid fa-users-gear text-slate-300"></i>
+                        <span>Gestión de Usuarios</span>
+                    </button>
+
+                    <!-- Botón Cambiar Contraseña -->
+                    <button onclick="cambiarMiClave()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5 border border-slate-700" title="Cambiar mi contraseña">
+                        <i class="fa-solid fa-key text-slate-300"></i>
+                        <span>Cambiar Clave</span>
+                    </button>
+
+                    <button onclick="exportarExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-excel"></i>
+                        <span>Exportar Excel</span>
+                    </button>
+
+                    <button id="btnLogout" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1 border border-slate-700">
+                        <i class="fa-solid fa-power-off text-rose-400"></i>
+                        <span>Salir</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Formulario de Inscripción / Edición -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                <h2 id="formTitle" class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-slate-700"></i> Registrar Estudiante
+                </h2>
+                
+                <form id="registroForm" class="space-y-4">
+                    <input type="hidden" id="editId" value="">
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cédula / ID</label>
+                        <input type="text" id="cedula" required placeholder="8-888-8888" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                        <input type="text" id="nombre" required placeholder="Juan" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Apellido</label>
+                        <input type="text" id="apellido" required placeholder="Pérez" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
+                        <input type="tel" id="telefono" required placeholder="6000-0000" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Electrónico</label>
+                        <input type="email" id="correo" required placeholder="estudiante@ejemplo.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Turno del Curso</label>
+                        <select id="turno" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none bg-white">
+                            <!-- Opciones dinámicas -->
+                        </select>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" id="btnGuardar" class="flex-grow bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 rounded-lg shadow transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-save"></i>
+                            <span id="btnGuardarText">Guardar Registro</span>
+                        </button>
+                        <button type="button" id="btnCancelarEdit" onclick="cancelarEdicion()" class="hidden bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg transition">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tabla y Controles de Navegación -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+                
+                <!-- Pestañas: Activos vs Histórico -->
+                <div class="flex flex-wrap items-center justify-between border-b border-slate-200 mb-4 pb-2 gap-2">
+                    <div class="flex gap-2">
+                        <button id="tabActivos" onclick="cambiarVista('activos')" class="py-2 px-4 font-bold text-slate-900 border-b-2 border-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-user-check"></i> Activos (Curso Actual)
+                        </button>
+                        <button id="tabHistorico" onclick="cambiarVista('historico')" class="py-2 px-4 font-medium text-slate-500 hover:text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-box-archive"></i> Histórico de Cursos
+                        </button>
+                    </div>
+
+                    <!-- Botón para archivar curso completo (Solo SIU) -->
+                    <button id="btnArchivarCurso" onclick="archivarCursoCompleto()" class="hidden bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-box-archive text-slate-300"></i>
+                        <span>Archivar Curso Actual</span>
+                    </button>
+
+                    <!-- Botón para restaurar curso completo (Solo SIU) -->
+                    <button id="btnRestaurarCurso" onclick="restaurarCursoCompleto()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Restaurar Curso Seleccionado</span>
+                    </button>
+                </div>
+
+                <!-- Filtros de Histórico y Buscador -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                    <div id="contenedorBuscador" class="sm:col-span-3">
+                        <input type="text" id="inputBuscar" placeholder="Buscar por cédula, nombre, correo, turno o usuario..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div id="contenedorFiltroCurso" class="hidden sm:col-span-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="sm:col-span-2">
+                                <input type="text" id="inputBuscarHistorico" placeholder="Buscar en el archivo..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                            </div>
+                            <div>
+                                <select id="selectFiltroCurso" onchange="renderizarSegunVista()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none bg-slate-50 font-semibold text-slate-800">
+                                    <option value="" disabled selected>Selecciona un curso...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla -->
+                <div class="overflow-x-auto rounded-lg border border-slate-200 flex-grow">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
+                            <tr>
+                                <th class="py-3 px-4">Cédula</th>
+                                <th class="py-3 px-4">Nombre Completo</th>
+                                <th class="py-3 px-4">Teléfono</th>
+                                <th class="py-3 px-4">Correo</th>
+                                <th class="py-3 px-4">Turno / Curso</th>
+                                <th class="py-3 px-4">Auditoría</th>
+                                <th class="py-3 px-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCuerpo" class="divide-y divide-slate-200">
+                            <tr>
+                                <td colspan="7" class="text-center py-6 text-slate-400">Cargando conexión...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center text-xs text-slate-500">
+                    <span id="totalRegistros" class="font-semibold text-slate-700">Total: 0</span>
+                    <span id="labelVistaActual">Mostrando: Estudiantes Activos</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= MODAL GESTIÓN DE USUARIOS (SOLO ADMIN SIU) ================= -->
+    <div id="modalUser" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-users-gear text-slate-700"></i>
+                    Gestión de Usuarios y Accesos
+                </h3>
+                <button onclick="toggleUserModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="newUserForm" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6 space-y-3">
+                <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Crear Nuevo Colaborador</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                        <input type="text" id="newUsername" required placeholder="Carlos Pérez" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Correo</label>
+                        <input type="email" id="newUserEmail" required placeholder="carlos@utp.ac.pa" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Contraseña</label>
+                        <input type="password" id="newUserPassword" required minlength="6" placeholder="••••••••" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-500">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" id="btnCreateUserSubmit" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Registrar Usuario
+                    </button>
+                </div>
+            </form>
+
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Usuarios Registrados en la Plataforma</h4>
+            <div class="overflow-y-auto rounded-lg border border-slate-200 flex-grow">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold sticky top-0">
+                        <tr>
+                            <th class="py-2.5 px-3">Usuario</th>
+                            <th class="py-2.5 px-3">Correo</th>
+                            <th class="py-2.5 px-3 text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuariosCuerpo" class="divide-y divide-slate-200">
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-slate-400">Cargando lista de usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 flex justify-end">
+                <button type="button" onclick="toggleUserModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Firebase Modular (SDK v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            updateProfile,
+            sendPasswordResetEmail,
+            updatePassword
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            deleteDoc, 
+            doc, 
+            updateDoc,
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCfVh9uB8LZL2Ji_3-WLs9gJDz7vjQ53fA",
+            authDomain: "siu-paa.firebaseapp.com",
+            projectId: "siu-paa",
+            storageBucket: "siu-paa.firebasestorage.app",
+            messagingSenderId: "71554343629",
+            appId: "1:71554343629:web:0c738c096a66711a3c3f84",
+            measurementId: "G-EZ43Z0ZPT0"
+        };
+
+        const ADMIN_EMAIL = "siu.panamaoeste@utp.ac.pa";
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const secondaryApp = initializeApp(firebaseConfig, "SecondaryAppInstance");
+        const secondaryAuth = getAuth(secondaryApp);
+        
+        const coleccionEstudiantesRef = collection(db, "registros_paa");
+        const coleccionTurnosRef = collection(db, "turnos_paa");
+        const coleccionUsuariosRef = collection(db, "usuarios_paa");
+
+        let todosLosRegistros = [];
+        let todosLosUsuarios = [];
+        let turnosSet = new Set(["Matutino", "Vespertino"]);
+        let vistaActual = 'activos';
+
+        function esAdministrador() {
+            return auth.currentUser && auth.currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+        }
+
+        function obtenerUsuarioActual() {
+            const user = auth.currentUser;
+            if (!user) return 'Sistema';
+            if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                return 'SIU';
+            }
+            return user.displayName || user.email;
+        }
+
+        // ================= AUTENTICACIÓN Y SESIÓN =================
+        const loginView = document.getElementById('loginView');
+        const appView = document.getElementById('appView');
+        const loginError = document.getElementById('loginError');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                loginView.classList.add('hidden');
+                appView.classList.remove('hidden');
+                
+                if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && user.displayName !== 'SIU') {
+                    try {
+                        await updateProfile(user, { displayName: "SIU" });
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+
+                const esAdmin = esAdministrador();
+                const nombreMostrar = esAdmin ? `SIU (${user.email})` : (user.displayName ? `${user.displayName} (${user.email})` : user.email);
+                document.getElementById('userNameText').textContent = nombreMostrar;
+                
+                const btnCrearUsuario = document.getElementById('btnCrearUsuarioModal');
+                if (esAdmin) {
+                    btnCrearUsuario.classList.remove('hidden');
+                } else {
+                    btnCrearUsuario.classList.add('hidden');
+                }
+
+                iniciarEscuchasFirestore();
+            } else {
+                appView.classList.add('hidden');
+                loginView.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const btn = document.getElementById('btnLogin');
+
+            loginError.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Validando...`;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (err) {
+                console.error(err);
+                loginError.textContent = "Credenciales incorrectas. Verifica el correo y la contraseña.";
+                loginError.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> <span>Iniciar Sesión</span>`;
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', () => {
+            if (confirm("¿Seguro que deseas cerrar sesión?")) {
+                signOut(auth);
+            }
+        });
+
+        // ================= CAMBIAR MI PROPIA CONTRASEÑA =================
+        window.cambiarMiClave = async () => {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const opcion = confirm("¿Deseas cambiar tu contraseña directamente?\n\n- Presiona OK para ingresar tu nueva clave.\n- O presiona Cancelar si prefieres recibir un correo de recuperación.");
+
+            if (opcion) {
+                const nuevaClave = prompt("Escribe tu nueva contraseña (mínimo 6 caracteres):");
+                if (nuevaClave && nuevaClave.trim().length >= 6) {
+                    try {
+                        await updatePassword(user, nuevaClave.trim());
+                        alert("¡Tu contraseña ha sido actualizada con éxito!");
+                    } catch (err) {
+                        if (err.code === 'auth/requires-recent-login') {
+                            alert("Por razones de seguridad, debes cerrar sesión e iniciarla nuevamente antes de cambiar la clave.");
+                        } else {
+                            alert("Error al actualizar la contraseña: " + err.message);
+                        }
+                    }
+                } else if (nuevaClave) {
+                    alert("La contraseña debe tener al menos 6 caracteres.");
+                }
+            } else {
+                try {
+                    await sendPasswordResetEmail(auth, user.email);
+                    alert(`Se ha enviado un correo a ${user.email} con las instrucciones para restablecer tu contraseña.`);
+                } catch (err) {
+                    alert("Error al enviar correo de recuperación: " + err.message);
+                }
+            }
+        };
+
+        // ================= GESTIÓN DE USUARIOS (SOLO SIU) =================
+        window.toggleUserModal = () => {
+            if (!esAdministrador()) {
+                alert("Acceso denegado: Solo la cuenta SIU puede gestionar usuarios.");
+                return;
+            }
+
+            const modal = document.getElementById('modalUser');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('newUserForm').reset();
+            }
+        };
+
+        function escucharUsuarios() {
+            onSnapshot(coleccionUsuariosRef, (snapshot) => {
+                todosLosUsuarios = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarTablaUsuarios();
+            });
+        }
+
+        function renderizarTablaUsuarios() {
+            const tbody = document.getElementById('tablaUsuariosCuerpo');
+            
+            if (todosLosUsuarios.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">No hay otros colaboradores registrados aún.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = todosLosUsuarios.map(u => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-2.5 px-3 font-semibold text-slate-800">${u.displayName || 'Sin Nombre'}</td>
+                    <td class="py-2.5 px-3 text-slate-600">${u.email}</td>
+                    <td class="py-2.5 px-3 text-center flex justify-center gap-2">
+                        <button onclick="editarUsuarioInfo('${u.id}')" class="text-slate-700 hover:text-slate-900 text-xs font-semibold px-2 py-1 rounded bg-slate-100" title="Editar Nombre/Correo">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </button>
+                        <button onclick="resetearClaveUsuario('${u.email}')" class="text-sky-700 hover:text-sky-900 text-xs font-semibold px-2 py-1 rounded bg-sky-50" title="Enviar correo de cambio de contraseña">
+                            <i class="fa-solid fa-key"></i> Clave
+                        </button>
+                        <button onclick="eliminarUsuarioControl('${u.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 rounded bg-rose-50" title="Eliminar cuenta del sistema">
+                            <i class="fa-solid fa-trash-can"></i> Borrar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('newUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!esAdministrador()) return;
+
+            const username = document.getElementById('newUsername').value.trim();
+            const email = document.getElementById('newUserEmail').value.trim();
+            const pass = document.getElementById('newUserPassword').value.trim();
+            const btn = document.getElementById('btnCreateUserSubmit');
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
+
+            try {
+                const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+                await updateProfile(userCred.user, { displayName: username });
+                await signOut(secondaryAuth);
+
+                await addDoc(coleccionUsuariosRef, {
+                    uid: userCred.user.uid,
+                    displayName: username,
+                    email: email,
+                    creado_en: serverTimestamp()
+                });
+
+                alert(`¡Usuario registrado con éxito!\n\nNombre: ${username}\nCorreo: ${email}`);
+                document.getElementById('newUserForm').reset();
+            } catch (err) {
+                alert("Error al crear el usuario: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-plus"></i> Registrar Usuario`;
+            }
+        });
+
+        window.resetearClaveUsuario = async (email) => {
+            if (!esAdministrador()) return;
+            if (confirm(`¿Deseas enviar un correo de restablecimiento de contraseña a ${email}?`)) {
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    alert(`Se ha enviado un correo a ${email} con instrucciones para cambiar la contraseña.`);
+                } catch (err) {
+                    alert("Error enviando correo: " + err.message);
+                }
+            }
+        };
+
+        window.editarUsuarioInfo = async (id) => {
+            if (!esAdministrador()) return;
+            const userDoc = todosLosUsuarios.find(u => u.id === id);
+            if (!userDoc) return;
+
+            const nuevoNombre = prompt("Editar Nombre de Usuario / Colaborador:", userDoc.displayName || "");
+            if (nuevoNombre && nuevoNombre.trim() !== "") {
+                try {
+                    await updateDoc(doc(db, "usuarios_paa", id), {
+                        displayName: nuevoNombre.trim()
+                    });
+                } catch (err) {
+                    alert("Error al actualizar: " + err.message);
+                }
+            }
+        };
+
+        window.eliminarUsuarioControl = async (id) => {
+            if (!esAdministrador()) return;
+            if (confirm("¿Confirmas que deseas borrar la cuenta de este colaborador del sistema?")) {
+                try {
+                    await deleteDoc(doc(db, "usuarios_paa", id));
+                    alert("Usuario eliminado correctamente de la lista de accesos.");
+                } catch (err) {
+                    alert("Error al eliminar usuario: " + err.message);
+                }
+            }
+        };
+
+        // ================= LÓGICA DE FIRESTORE Y TABLA =================
+        function iniciarEscuchasFirestore() {
+            escucharUsuarios();
+
+            onSnapshot(coleccionTurnosRef, (snapshot) => {
+                snapshot.docs.forEach(docSnap => {
+                    if (docSnap.data().nombre) turnosSet.add(docSnap.data().nombre);
+                });
+                actualizarSelectTurnos();
+            });
+
+            onSnapshot(coleccionEstudiantesRef, (snapshot) => {
+                todosLosRegistros = snapshot.docs.map(docSnapshot => ({
+                    id: docSnapshot.id,
+                    ...docSnapshot.data()
+                }));
+                
+                todosLosRegistros.sort((a, b) => {
+                    const fechaA = a.created_at ? a.created_at.seconds : Date.now();
+                    const fechaB = b.created_at ? b.created_at.seconds : Date.now();
+                    return fechaB - fechaA;
+                });
+
+                todosLosRegistros.forEach(est => {
+                    if (est.turno) turnosSet.add(est.turno);
+                });
+
+                actualizarSelectTurnos();
+                actualizarFiltroCursosArchivados();
+                renderizarSegunVista();
+            });
+        }
+
+        function actualizarSelectTurnos() {
+            const select = document.getElementById('turno');
+            const valorPrevio = select.value;
+
+            let html = '<option value="" disabled selected>Selecciona un turno</option>';
+            turnosSet.forEach(t => {
+                html += `<option value="${t}">${t}</option>`;
+            });
+            html += '<option value="__NUEVO__" class="font-bold text-slate-700">+ Agregar nuevo turno...</option>';
+            
+            select.innerHTML = html;
+            if (valorPrevio && valorPrevio !== '__NUEVO__' && turnosSet.has(valorPrevio)) {
+                select.value = valorPrevio;
+            }
+        }
+
+        document.getElementById('turno').addEventListener('change', async (e) => {
+            if (e.target.value === '__NUEVO__') {
+                const nuevoTurno = prompt("Escribe el nombre del nuevo turno:");
+                if (nuevoTurno && nuevoTurno.trim() !== "") {
+                    const nombreLimpio = nuevoTurno.trim();
+                    try {
+                        await addDoc(coleccionTurnosRef, { nombre: nombreLimpio });
+                        document.getElementById('turno').value = nombreLimpio;
+                    } catch (err) {
+                        alert("Error al guardar turno: " + err.message);
+                        document.getElementById('turno').value = "";
+                    }
+                } else {
+                    document.getElementById('turno').value = "";
+                }
+            }
+        });
+
+        window.cambiarVista = (vista) => {
+            vistaActual = vista;
+            const tabActivos = document.getElementById('tabActivos');
+            const tabHistorico = document.getElementById('tabHistorico');
+            const btnArchivarCurso = document.getElementById('btnArchivarCurso');
+            const btnRestaurarCurso = document.getElementById('btnRestaurarCurso');
+            const contenedorBuscador = document.getElementById('contenedorBuscador');
+            const contenedorFiltroCurso = document.getElementById('contenedorFiltroCurso');
+            const esAdmin = esAdministrador();
+
+            if (vista === 'activos') {
+                tabActivos.className = "py-2 px-4 font-bold text-slate-900 border-b-2 border-slate-900 text-sm flex items-center gap-2";
+                tabHistorico.className = "py-2 px-4 font-medium text-slate-500 hover:text-slate-800 text-sm flex items-center gap-2";
+                
+                if (esAdmin) btnArchivarCurso.classList.remove('hidden');
+                btnRestaurarCurso.classList.add('hidden');
+                contenedorBuscador.classList.remove('hidden');
+                contenedorFiltroCurso.classList.add('hidden');
+                document.getElementById('labelVistaActual').textContent = "Mostrando: Estudiantes Activos";
+            } else {
+                tabHistorico.className = "py-2 px-4 font-bold text-slate-900 border-b-2 border-slate-900 text-sm flex items-center gap-2";
+                tabActivos.className = "py-2 px-4 font-medium text-slate-500 hover:text-slate-800 text-sm flex items-center gap-2";
+                btnArchivarCurso.classList.add('hidden');
+                if (esAdmin) btnRestaurarCurso.classList.remove('hidden');
+                contenedorBuscador.classList.add('hidden');
+                contenedorFiltroCurso.classList.remove('hidden');
+                document.getElementById('labelVistaActual').textContent = "Mostrando: Histórico de Cursos";
+            }
+
+            renderizarSegunVista();
+        };
+
+        function actualizarFiltroCursosArchivados() {
+            const selectFiltro = document.getElementById('selectFiltroCurso');
+            const valorSeleccionado = selectFiltro.value;
+            
+            const cursosArchivados = new Set();
+            todosLosRegistros.filter(r => r.archivado).forEach(r => {
+                if (r.nombre_curso) cursosArchivados.add(r.nombre_curso);
+            });
+
+            let html = '<option value="" disabled selected>Selecciona un curso...</option>';
+            cursosArchivados.forEach(c => {
+                html += `<option value="${c}">${c}</option>`;
+            });
+
+            selectFiltro.innerHTML = html;
+            if (valorSeleccionado && Array.from(cursosArchivados).includes(valorSeleccionado)) {
+                selectFiltro.value = valorSeleccionado;
+            }
+        }
+
+        window.renderizarSegunVista = () => {
+            const queryText = (vistaActual === 'activos' 
+                ? document.getElementById('inputBuscar').value 
+                : document.getElementById('inputBuscarHistorico').value).toLowerCase();
+                
+            const cursoFiltro = document.getElementById('selectFiltroCurso').value;
+
+            if (vistaActual === 'historico' && (!cursoFiltro || cursoFiltro === "")) {
+                renderizarTabla([], "Por favor, selecciona un curso del menú desplegable para ver su historial.");
+                return;
+            }
+
+            let listaFiltrada = todosLosRegistros.filter(est => {
+                const coincideQuery = 
+                    (est.cedula && est.cedula.toLowerCase().includes(queryText)) ||
+                    (est.nombre && est.nombre.toLowerCase().includes(queryText)) ||
+                    (est.apellido && est.apellido.toLowerCase().includes(queryText)) ||
+                    (est.correo && est.correo.toLowerCase().includes(queryText)) ||
+                    (est.telefono && est.telefono.toLowerCase().includes(queryText)) ||
+                    (est.turno && est.turno.toLowerCase().includes(queryText)) ||
+                    (est.creado_por && est.creado_por.toLowerCase().includes(queryText)) ||
+                    (est.modificado_por && est.modificado_por.toLowerCase().includes(queryText)) ||
+                    (est.nombre_curso && est.nombre_curso.toLowerCase().includes(queryText));
+
+                if (vistaActual === 'activos') {
+                    return !est.archivado && coincideQuery;
+                } else {
+                    return est.archivado && (est.nombre_curso === cursoFiltro) && coincideQuery;
+                }
+            });
+
+            renderizarTabla(listaFiltrada);
+        };
+
+        document.getElementById('registroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            const btn = document.getElementById('btnGuardar');
+            const usuarioActual = obtenerUsuarioActual();
+            btn.disabled = true;
+
+            const datosEstudiante = {
+                cedula: document.getElementById('cedula').value.trim(),
+                nombre: document.getElementById('nombre').value.trim(),
+                apellido: document.getElementById('apellido').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                correo: document.getElementById('correo').value.trim(),
+                turno: document.getElementById('turno').value,
+                modificado_por: usuarioActual
+            };
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "registros_paa", editId), datosEstudiante);
+                    cancelarEdicion();
+                } else {
+                    datosEstudiante.creado_por = usuarioActual;
+                    datosEstudiante.archivado = false;
+                    datosEstudiante.created_at = serverTimestamp();
+                    await addDoc(coleccionEstudiantesRef, datosEstudiante);
+                    document.getElementById('registroForm').reset();
+                }
+            } catch (err) {
+                alert("Error en la operación: " + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        window.archivarRegistro = async (id) => {
+            if (!esAdministrador()) {
+                alert("Acceso denegado: Solo la cuenta SIU puede archivar registros.");
+                return;
+            }
+
+            const est = todosLosRegistros.find(r => r.id === id);
+            if (!est) return;
+
+            const nombreCurso = prompt(`Nombre del curso para archivar a ${est.nombre} ${est.apellido}:`, "Curso 1");
+            if (nombreCurso && nombreCurso.trim() !== "") {
+                try {
+                    await updateDoc(doc(db, "registros_paa", id), {
+                        archivado: true,
+                        nombre_curso: nombreCurso.trim(),
+                        modificado_por: obtenerUsuarioActual()
+                    });
+                } catch (err) {
+                    alert("Error al archivar: " + err.message);
+                }
+            }
+        };
+
+        window.desarchivarRegistro = async (id) => {
+            if (!esAdministrador()) {
+                alert("Acceso denegado: Solo la cuenta SIU puede restaurar registros.");
+                return;
+            }
+
+            if (confirm("¿Deseas restaurar este estudiante a la lista de activos?")) {
+                try {
+                    await updateDoc(doc(db, "registros_paa", id), {
+                        archivado: false,
+                        nombre_curso: "",
+                        modificado_por: obtenerUsuarioActual()
+                    });
+                } catch (err) {
+                    alert("Error al restaurar: " + err.message);
+                }
+            }
+        };
+
+        window.archivarCursoCompleto = async () => {
+            if (!esAdministrador()) {
+                alert("Acceso denegado: Solo la cuenta SIU puede archivar cursos.");
+                return;
+            }
+
+            const activos = todosLosRegistros.filter(r => !r.archivado);
+            if (activos.length === 0) {
+                alert("No hay estudiantes activos en el curso actual para archivar.");
+                return;
+            }
+
+            const nombreCurso = prompt(`Ingresa el nombre del curso/grupo para archivar a los ${activos.length} estudiantes activos:`, "Curso 1");
+            if (nombreCurso && nombreCurso.trim() !== "") {
+                const nombreLimpio = nombreCurso.trim();
+                const usuarioActual = obtenerUsuarioActual();
+
+                if (confirm(`¿Confirmas que deseas archivar ${activos.length} estudiantes bajo el nombre "${nombreLimpio}"?`)) {
+                    for (const est of activos) {
+                        await updateDoc(doc(db, "registros_paa", est.id), {
+                            archivado: true,
+                            nombre_curso: nombreLimpio,
+                            modificado_por: usuarioActual
+                        });
+                    }
+                    alert("Curso archivado exitosamente.");
+                }
+            }
+        };
+
+        window.restaurarCursoCompleto = async () => {
+            if (!esAdministrador()) {
+                alert("Acceso denegado: Solo la cuenta SIU puede restaurar cursos.");
+                return;
+            }
+
+            const cursoSeleccionado = document.getElementById('selectFiltroCurso').value;
+
+            if (!cursoSeleccionado) {
+                alert("Por favor, selecciona un curso específico en el menú desplegable para poder restaurarlo.");
+                return;
+            }
+
+            const estudiantesDelCurso = todosLosRegistros.filter(r => r.archivado && r.nombre_curso === cursoSeleccionado);
+
+            if (estudiantesDelCurso.length === 0) {
+                alert("No se encontraron estudiantes en el curso seleccionado.");
+                return;
+            }
+
+            if (confirm(`¿Confirmas que deseas restaurar los ${estudiantesDelCurso.length} estudiantes del "${cursoSeleccionado}" a la lista de Activos?`)) {
+                const usuarioActual = obtenerUsuarioActual();
+                try {
+                    for (const est of estudiantesDelCurso) {
+                        await updateDoc(doc(db, "registros_paa", est.id), {
+                            archivado: false,
+                            nombre_curso: "",
+                            modificado_por: usuarioActual
+                        });
+                    }
+                    alert(`El curso "${cursoSeleccionado}" ha sido restaurado exitosamente a la lista de Activos.`);
+                    cambiarVista('activos');
+                } catch (err) {
+                    alert("Error al restaurar el curso: " + err.message);
+                }
+            }
+        };
+
+        window.editarRegistro = (id) => {
+            const est = todosLosRegistros.find(r => r.id === id);
+            if (!est) return;
+
+            document.getElementById('editId').value = id;
+            document.getElementById('cedula').value = est.cedula || '';
+            document.getElementById('nombre').value = est.nombre || '';
+            document.getElementById('apellido').value = est.apellido || '';
+            document.getElementById('telefono').value = est.telefono || '';
+            document.getElementById('correo').value = est.correo || '';
+
+            if (est.turno) {
+                turnosSet.add(est.turno);
+                actualizarSelectTurnos();
+                document.getElementById('turno').value = est.turno;
+            }
+
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-pen text-slate-700"></i> Editar Estudiante`;
+            document.getElementById('btnGuardarText').textContent = "Actualizar Registro";
+            document.getElementById('btnCancelarEdit').classList.remove('hidden');
+        };
+
+        window.cancelarEdicion = () => {
+            document.getElementById('editId').value = '';
+            document.getElementById('registroForm').reset();
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-plus text-slate-700"></i> Registrar Estudiante`;
+            document.getElementById('btnGuardarText').textContent = "Guardar Registro";
+            document.getElementById('btnCancelarEdit').classList.add('hidden');
+        };
+
+        function renderizarTabla(lista, mensajeVacio = "No hay estudiantes en esta sección.") {
+            const tbody = document.getElementById('tablaCuerpo');
+            const esAdmin = esAdministrador();
+            document.getElementById('totalRegistros').textContent = `Total: ${lista.length}`;
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">${mensajeVacio}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = lista.map(est => {
+                let badgeTurno = `<span class="inline-flex items-center gap-1 bg-slate-100 text-slate-800 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-200"><i class="fa-solid fa-clock text-slate-500"></i> ${est.turno || 'Sin Asignar'}</span>`;
+                
+                if (est.turno === 'Matutino') {
+                    badgeTurno = `<span class="inline-flex items-center gap-1 bg-sky-50 text-sky-800 text-xs px-2.5 py-0.5 rounded-full font-medium border border-sky-200"><i class="fa-solid fa-sun text-sky-600"></i> Matutino</span>`;
+                } else if (est.turno === 'Vespertino') {
+                    badgeTurno = `<span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-800 text-xs px-2.5 py-0.5 rounded-full font-medium border border-indigo-200"><i class="fa-solid fa-moon text-indigo-600"></i> Vespertino</span>`;
+                }
+
+                const etiquetaCurso = est.archivado ? `<span class="block text-[10px] text-slate-500 font-bold uppercase mt-0.5"><i class="fa-solid fa-folder text-slate-500"></i> ${est.nombre_curso || 'Sin Nombre'}</span>` : '';
+
+                const bloqueAuditoria = `
+                    <div class="text-xs">
+                        <div class="text-slate-700 font-medium"><i class="fa-solid fa-user-plus text-slate-500 text-[10px] mr-1"></i> ${est.creado_por || 'SIU'}</div>
+                        ${est.modificado_por ? `<div class="text-slate-400 text-[11px] mt-0.5"><i class="fa-solid fa-user-pen text-slate-400 text-[10px] mr-1"></i> ${est.modificado_por}</div>` : ''}
+                    </div>
+                `;
+
+                const botonEliminarHTML = esAdmin ? `
+                    <button onclick="eliminarRegistro('${est.id}')" class="text-rose-600 hover:text-rose-800 p-1" title="Eliminar definitivamente">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                ` : '';
+
+                const botonArchivarHTML = esAdmin ? `
+                    <button onclick="archivarRegistro('${est.id}')" class="text-slate-600 hover:text-slate-900 p-1" title="Archivar a un Curso">
+                        <i class="fa-solid fa-box-archive"></i>
+                    </button>
+                ` : '';
+
+                const botonDesarchivarHTML = esAdmin ? `
+                    <button onclick="desarchivarRegistro('${est.id}')" class="text-emerald-700 hover:text-emerald-900 p-1" title="Restaurar a Activos">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                ` : '';
+
+                let botonesAccion = '';
+                if (!est.archivado) {
+                    botonesAccion = `
+                        <button onclick="editarRegistro('${est.id}')" class="text-slate-700 hover:text-slate-900 p-1" title="Editar">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        ${botonArchivarHTML}
+                        ${botonEliminarHTML}
+                    `;
+                } else {
+                    botonesAccion = `
+                        ${botonDesarchivarHTML}
+                        ${botonEliminarHTML}
+                    `;
+                }
+
+                return `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 font-semibold text-slate-800">${est.cedula || '-'}</td>
+                    <td class="py-3 px-4">${est.nombre || ''} ${est.apellido || ''}</td>
+                    <td class="py-3 px-4">
+                        <a href="https://wa.me/${(est.telefono || '').replace(/\D/g,'')}" target="_blank" class="text-emerald-700 hover:underline font-medium">
+                            <i class="fa-brands fa-whatsapp"></i> ${est.telefono || '-'}
+                        </a>
+                    </td>
+                    <td class="py-3 px-4">${est.correo || '-'}</td>
+                    <td class="py-3 px-4">${badgeTurno} ${etiquetaCurso}</td>
+                    <td class="py-3 px-4">${bloqueAuditoria}</td>
+                    <td class="py-3 px-4 text-center flex justify-center gap-1.5">
+                        ${botonesAccion}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        window.eliminarRegistro = async (id) => {
+            if (!esAdministrador()) {
+                alert("Acceso denegado: Solo la cuenta SIU puede borrar registros.");
+                return;
+            }
+
+            if (confirm("¿Deseas eliminar permanentemente este registro de la base de datos?")) {
+                try {
+                    await deleteDoc(doc(db, "registros_paa", id));
+                } catch (err) {
+                    alert("Error al eliminar: " + err.message);
+                }
+            }
+        };
+
+        window.exportarExcel = () => {
+            const queryText = (vistaActual === 'activos' 
+                ? document.getElementById('inputBuscar').value 
+                : document.getElementById('inputBuscarHistorico').value).toLowerCase();
+                
+            const cursoFiltro = document.getElementById('selectFiltroCurso').value;
+
+            if (vistaActual === 'historico' && (!cursoFiltro || cursoFiltro === "")) {
+                alert("Por favor, selecciona un curso del menú desplegable antes de exportar.");
+                return;
+            }
+
+            const datosFiltrados = todosLosRegistros.filter(est => {
+                if (vistaActual === 'activos') {
+                    return !est.archivado;
+                } else {
+                    return est.archivado && (est.nombre_curso === cursoFiltro);
+                }
+            });
+
+            if (datosFiltrados.length === 0) {
+                alert("No hay registros en esta vista para exportar.");
+                return;
+            }
+
+            const datosExcel = datosFiltrados.map((est, i) => ({
+                "N°": i + 1,
+                "Cédula": est.cedula || "",
+                "Nombre": est.nombre || "",
+                "Apellido": est.apellido || "",
+                "Teléfono": est.telefono || "",
+                "Correo Electrónico": est.correo || "",
+                "Turno": est.turno || "",
+                "Curso / Grupo": est.nombre_curso || (est.archivado ? "Archivado" : "Curso Actual")
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+            const workbook = XLSX.utils.book_new();
+            
+            const nombreHoja = vistaActual === 'activos' ? "Inscritos Activos" : "Histórico Cursos";
+            XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+
+            const fecha = new Date().toISOString().slice(0, 10);
+            const sufijo = vistaActual === 'activos' ? "ACTIVOS" : `HISTORICO_${cursoFiltro.replace(/\s+/g, '_')}`;
+            XLSX.writeFile(workbook, `Inscritos_PAA_${sufijo}_${fecha}.xlsx`);
+        };
+
+        document.getElementById('inputBuscar').addEventListener('input', renderizarSegunVista);
+        document.getElementById('inputBuscarHistorico').addEventListener('input', renderizarSegunVista);
+    </script>
+</body>
+</html>
