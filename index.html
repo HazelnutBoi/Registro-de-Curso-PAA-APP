@@ -96,7 +96,7 @@
         </header>
 
         <!-- Contenido Principal -->
-        <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <main class="max-w-[90rem] mx-auto px-4 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Formulario de Inscripción / Edición -->
             <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
@@ -111,13 +111,15 @@
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Cédula / ID</label>
                         <input type="text" id="cedula" required placeholder="8-888-8888" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
-                        <input type="text" id="nombre" required placeholder="Juan" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Apellido</label>
-                        <input type="text" id="apellido" required placeholder="Pérez" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nombre</label>
+                            <input type="text" id="nombre" required placeholder="Juan" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Apellido</label>
+                            <input type="text" id="apellido" required placeholder="Pérez" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Teléfono</label>
@@ -126,6 +128,16 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Correo Electrónico</label>
                         <input type="email" id="correo" required placeholder="estudiante@ejemplo.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Fecha Transacción</label>
+                            <input type="date" id="fechaTransaccion" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">N° de Referencia</label>
+                            <input type="text" id="numeroReferencia" required placeholder="00012345" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Turno del Curso</label>
@@ -176,7 +188,7 @@
                 <!-- Filtros de Histórico y Buscador -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                     <div id="contenedorBuscador" class="sm:col-span-3">
-                        <input type="text" id="inputBuscar" placeholder="Buscar por cédula, nombre, correo, turno o usuario..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
+                        <input type="text" id="inputBuscar" placeholder="Buscar por cédula, nombre, correo, ref., fecha o usuario..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
                     </div>
                     <div id="contenedorFiltroCurso" class="hidden sm:col-span-3">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -197,18 +209,19 @@
                     <table class="w-full text-left text-sm text-slate-600">
                         <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
                             <tr>
-                                <th class="py-3 px-4">Cédula</th>
-                                <th class="py-3 px-4">Nombre Completo</th>
-                                <th class="py-3 px-4">Teléfono</th>
-                                <th class="py-3 px-4">Correo</th>
-                                <th class="py-3 px-4">Turno / Curso</th>
-                                <th class="py-3 px-4">Auditoría</th>
-                                <th class="py-3 px-4 text-center">Acciones</th>
+                                <th class="py-3 px-3">Cédula</th>
+                                <th class="py-3 px-3">Nombre Completo</th>
+                                <th class="py-3 px-3">Teléfono</th>
+                                <th class="py-3 px-3">Correo</th>
+                                <th class="py-3 px-3">Transacción</th>
+                                <th class="py-3 px-3">Turno / Curso</th>
+                                <th class="py-3 px-3">Auditoría</th>
+                                <th class="py-3 px-3 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaCuerpo" class="divide-y divide-slate-200">
                             <tr>
-                                <td colspan="7" class="text-center py-6 text-slate-400">Cargando conexión...</td>
+                                <td colspan="8" class="text-center py-6 text-slate-400">Cargando conexión...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -705,6 +718,8 @@
                     (est.apellido && est.apellido.toLowerCase().includes(queryText)) ||
                     (est.correo && est.correo.toLowerCase().includes(queryText)) ||
                     (est.telefono && est.telefono.toLowerCase().includes(queryText)) ||
+                    (est.fecha_transaccion && est.fecha_transaccion.toLowerCase().includes(queryText)) ||
+                    (est.numero_referencia && est.numero_referencia.toLowerCase().includes(queryText)) ||
                     (est.turno && est.turno.toLowerCase().includes(queryText)) ||
                     (est.creado_por && est.creado_por.toLowerCase().includes(queryText)) ||
                     (est.modificado_por && est.modificado_por.toLowerCase().includes(queryText)) ||
@@ -733,6 +748,8 @@
                 apellido: document.getElementById('apellido').value.trim(),
                 telefono: document.getElementById('telefono').value.trim(),
                 correo: document.getElementById('correo').value.trim(),
+                fecha_transaccion: document.getElementById('fechaTransaccion').value,
+                numero_referencia: document.getElementById('numeroReferencia').value.trim(),
                 turno: document.getElementById('turno').value,
                 modificado_por: usuarioActual
             };
@@ -875,6 +892,8 @@
             document.getElementById('apellido').value = est.apellido || '';
             document.getElementById('telefono').value = est.telefono || '';
             document.getElementById('correo').value = est.correo || '';
+            document.getElementById('fechaTransaccion').value = est.fecha_transaccion || '';
+            document.getElementById('numeroReferencia').value = est.numero_referencia || '';
 
             if (est.turno) {
                 turnosSet.add(est.turno);
@@ -901,7 +920,7 @@
             document.getElementById('totalRegistros').textContent = `Total: ${lista.length}`;
 
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">${mensajeVacio}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">${mensajeVacio}</td></tr>`;
                 return;
             }
 
@@ -915,6 +934,13 @@
                 }
 
                 const etiquetaCurso = est.archivado ? `<span class="block text-[10px] text-slate-500 font-bold uppercase mt-0.5"><i class="fa-solid fa-folder text-slate-500"></i> ${est.nombre_curso || 'Sin Nombre'}</span>` : '';
+
+                const bloqueTransaccion = `
+                    <div class="text-xs">
+                        <div class="font-semibold text-slate-800"><i class="fa-solid fa-receipt text-slate-400 text-[10px] mr-1"></i> Ref: ${est.numero_referencia || '-'}</div>
+                        <div class="text-slate-500 text-[11px] mt-0.5"><i class="fa-solid fa-calendar-day text-slate-400 text-[10px] mr-1"></i> ${est.fecha_transaccion || '-'}</div>
+                    </div>
+                `;
 
                 const bloqueAuditoria = `
                     <div class="text-xs">
@@ -959,17 +985,18 @@
 
                 return `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="py-3 px-4 font-semibold text-slate-800">${est.cedula || '-'}</td>
-                    <td class="py-3 px-4">${est.nombre || ''} ${est.apellido || ''}</td>
-                    <td class="py-3 px-4">
+                    <td class="py-3 px-3 font-semibold text-slate-800">${est.cedula || '-'}</td>
+                    <td class="py-3 px-3">${est.nombre || ''} ${est.apellido || ''}</td>
+                    <td class="py-3 px-3">
                         <a href="https://wa.me/${(est.telefono || '').replace(/\D/g,'')}" target="_blank" class="text-emerald-700 hover:underline font-medium">
                             <i class="fa-brands fa-whatsapp"></i> ${est.telefono || '-'}
                         </a>
                     </td>
-                    <td class="py-3 px-4">${est.correo || '-'}</td>
-                    <td class="py-3 px-4">${badgeTurno} ${etiquetaCurso}</td>
-                    <td class="py-3 px-4">${bloqueAuditoria}</td>
-                    <td class="py-3 px-4 text-center flex justify-center gap-1.5">
+                    <td class="py-3 px-3">${est.correo || '-'}</td>
+                    <td class="py-3 px-3">${bloqueTransaccion}</td>
+                    <td class="py-3 px-3">${badgeTurno} ${etiquetaCurso}</td>
+                    <td class="py-3 px-3">${bloqueAuditoria}</td>
+                    <td class="py-3 px-3 text-center flex justify-center gap-1.5">
                         ${botonesAccion}
                     </td>
                 </tr>
@@ -1024,6 +1051,8 @@
                 "Apellido": est.apellido || "",
                 "Teléfono": est.telefono || "",
                 "Correo Electrónico": est.correo || "",
+                "Fecha de Transacción": est.fecha_transaccion || "",
+                "Número de Referencia": est.numero_referencia || "",
                 "Turno": est.turno || "",
                 "Curso / Grupo": est.nombre_curso || (est.archivado ? "Archivado" : "Curso Actual")
             }));
