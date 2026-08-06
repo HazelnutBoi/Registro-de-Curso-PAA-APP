@@ -1019,6 +1019,7 @@
             }
         };
 
+        // EXPORTACIÓN DE DOS HOJAS DE EXCEL
         window.exportarExcel = () => {
             const queryText = (vistaActual === 'activos' 
                 ? document.getElementById('inputBuscar').value 
@@ -1044,7 +1045,8 @@
                 return;
             }
 
-            const datosExcel = datosFiltrados.map((est, i) => ({
+            // Hoja 1: Lista General de Inscritos
+            const datosExcelHoja1 = datosFiltrados.map((est, i) => ({
                 "N°": i + 1,
                 "Cédula": est.cedula || "",
                 "Nombre": est.nombre || "",
@@ -1057,11 +1059,30 @@
                 "Curso / Grupo": est.nombre_curso || (est.archivado ? "Archivado" : "Curso Actual")
             }));
 
-            const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+            // Hoja 2: Plantilla Detallada de Pagos (Monto B/ 45.00 y Transferencia bancaria)
+            const datosExcelHoja2 = datosFiltrados.map((est, i) => ({
+                "N°": i + 1,
+                "Cédula / Identificación": est.cedula || "",
+                "Nombre Completo": `${est.nombre || ''} ${est.apellido || ''}`.trim(),
+                "Teléfono": est.telefono || "",
+                "Correo Electrónico": est.correo || "",
+                "Fecha de Transacción": est.fecha_transaccion || "",
+                "N° de Referencia": est.numero_referencia || "",
+                "Monto": "B/ 45.00",
+                "Método de Pago": "Transferencia bancaria",
+                "Turno": est.turno || "",
+                "Curso / Grupo": est.nombre_curso || (est.archivado ? "Archivado" : "Curso Actual")
+            }));
+
             const workbook = XLSX.utils.book_new();
-            
-            const nombreHoja = vistaActual === 'activos' ? "Inscritos Activos" : "Histórico Cursos";
-            XLSX.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+
+            // Generar e insertar Hoja 1
+            const worksheet1 = XLSX.utils.json_to_sheet(datosExcelHoja1);
+            XLSX.utils.book_append_sheet(workbook, worksheet1, "Lista de Inscritos");
+
+            // Generar e insertar Hoja 2
+            const worksheet2 = XLSX.utils.json_to_sheet(datosExcelHoja2);
+            XLSX.utils.book_append_sheet(workbook, worksheet2, "Registro de Pagos");
 
             const fecha = new Date().toISOString().slice(0, 10);
             const sufijo = vistaActual === 'activos' ? "ACTIVOS" : `HISTORICO_${cursoFiltro.replace(/\s+/g, '_')}`;
