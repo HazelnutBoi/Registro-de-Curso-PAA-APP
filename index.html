@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <!-- ================= APLICACIÓN PRINCIPAL (OCULTA HASTA AUTENTICAR) ================= -->
+    <!-- ================= APLICACIÓN PRINCIPAL ================= -->
     <div id="appView" class="hidden min-h-screen flex flex-col">
         <!-- Header -->
         <header class="bg-slate-900 text-white shadow-md">
@@ -70,13 +70,11 @@
                         <span id="userNameText">Cargando...</span>
                     </span>
                     
-                    <!-- Botón exclusivo para Administrador SIU -->
                     <button id="btnCrearUsuarioModal" onclick="toggleUserModal()" class="hidden bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5 border border-slate-700">
                         <i class="fa-solid fa-users-gear text-slate-300"></i>
                         <span>Gestión de Usuarios</span>
                     </button>
 
-                    <!-- Botón Cambiar Contraseña -->
                     <button onclick="cambiarMiClave()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5 border border-slate-700" title="Cambiar mi contraseña">
                         <i class="fa-solid fa-key text-slate-300"></i>
                         <span>Cambiar Clave</span>
@@ -158,10 +156,9 @@
                 </form>
             </div>
 
-            <!-- Tabla y Controles de Navegación -->
+            <!-- Tabla y Controles -->
             <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
                 
-                <!-- Pestañas: Activos vs Histórico -->
                 <div class="flex flex-wrap items-center justify-between border-b border-slate-200 mb-4 pb-2 gap-2">
                     <div class="flex gap-2">
                         <button id="tabActivos" onclick="cambiarVista('activos')" class="py-2 px-4 font-bold text-slate-900 border-b-2 border-slate-900 text-sm flex items-center gap-2">
@@ -172,20 +169,17 @@
                         </button>
                     </div>
 
-                    <!-- Botón para archivar curso completo (Solo SIU) -->
                     <button id="btnArchivarCurso" onclick="archivarCursoCompleto()" class="hidden bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5">
                         <i class="fa-solid fa-box-archive text-slate-300"></i>
                         <span>Archivar Curso Actual</span>
                     </button>
 
-                    <!-- Botón para restaurar curso completo (Solo SIU) -->
                     <button id="btnRestaurarCurso" onclick="restaurarCursoCompleto()" class="hidden bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1.5">
                         <i class="fa-solid fa-rotate-left"></i>
                         <span>Restaurar Curso Seleccionado</span>
                     </button>
                 </div>
 
-                <!-- Filtros de Histórico y Buscador -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                     <div id="contenedorBuscador" class="sm:col-span-3">
                         <input type="text" id="inputBuscar" placeholder="Buscar por cédula, nombre, correo, ref., fecha o usuario..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 outline-none">
@@ -204,7 +198,6 @@
                     </div>
                 </div>
 
-                <!-- Tabla -->
                 <div class="overflow-x-auto rounded-lg border border-slate-200 flex-grow">
                     <table class="w-full text-left text-sm text-slate-600">
                         <thead class="bg-slate-100 text-slate-700 uppercase text-xs font-semibold">
@@ -235,7 +228,7 @@
         </main>
     </div>
 
-    <!-- ================= MODAL GESTIÓN DE USUARIOS (SOLO ADMIN SIU) ================= -->
+    <!-- ================= MODAL GESTIÓN DE USUARIOS ================= -->
     <div id="modalUser" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
             <div class="flex justify-between items-center mb-4">
@@ -295,7 +288,7 @@
         </div>
     </div>
 
-    <!-- Script de Firebase Modular (SDK v10) -->
+    <!-- Script Firebase Modular SDK v10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { 
@@ -424,7 +417,6 @@
             }
         });
 
-        // ================= CAMBIAR MI PROPIA CONTRASEÑA =================
         window.cambiarMiClave = async () => {
             const user = auth.currentUser;
             if (!user) return;
@@ -457,7 +449,6 @@
             }
         };
 
-        // ================= GESTIÓN DE USUARIOS (SOLO SIU) =================
         window.toggleUserModal = () => {
             if (!esAdministrador()) {
                 alert("Acceso denegado: Solo la cuenta SIU puede gestionar usuarios.");
@@ -1019,7 +1010,7 @@
             }
         };
 
-        // EXPORTACIÓN DE DOS HOJAS DE EXCEL
+        // EXPORTACIÓN A EXCEL EN DOS HOJAS
         window.exportarExcel = () => {
             const queryText = (vistaActual === 'activos' 
                 ? document.getElementById('inputBuscar').value 
@@ -1059,34 +1050,31 @@
                 "Curso / Grupo": est.nombre_curso || (est.archivado ? "Archivado" : "Curso Actual")
             }));
 
-            // Hoja 2: Plantilla Detallada de Pagos (Monto B/ 45.00 y Transferencia bancaria)
+            // Hoja 2: Formulario Reporte de Depósitos V1.0 (Estructura idéntica)
             const datosExcelHoja2 = datosFiltrados.map((est, i) => ({
                 "N°": i + 1,
-                "Cédula / Identificación": est.cedula || "",
-                "Nombre Completo": `${est.nombre || ''} ${est.apellido || ''}`.trim(),
-                "Teléfono": est.telefono || "",
-                "Correo Electrónico": est.correo || "",
-                "Fecha de Transacción": est.fecha_transaccion || "",
-                "N° de Referencia": est.numero_referencia || "",
-                "Monto": "B/ 45.00",
-                "Método de Pago": "Transferencia bancaria",
-                "Turno": est.turno || "",
-                "Curso / Grupo": est.nombre_curso || (est.archivado ? "Archivado" : "Curso Actual")
+                "CÉDULA / IDENTIFICACIÓN": est.cedula || "",
+                "NOMBRE Y APELLIDO": `${est.nombre || ''} ${est.apellido || ''}`.trim(),
+                "CORREO ELECTRÓNICO": est.correo || "",
+                "TELÉFONO": est.telefono || "",
+                "FECHA DE DEPÓSITO / TRANSACCIÓN": est.fecha_transaccion || "",
+                "N° DE REFERENCIA / BOLETA": est.numero_referencia || "",
+                "MONTO (B/)": "45.00",
+                "MÉTODO DE PAGO": "Transferencia bancaria",
+                "CONCEPTO DE PAGO": `Curso Afianzamiento PAA - ${est.turno || 'General'}`
             }));
 
             const workbook = XLSX.utils.book_new();
 
-            // Generar e insertar Hoja 1
             const worksheet1 = XLSX.utils.json_to_sheet(datosExcelHoja1);
             XLSX.utils.book_append_sheet(workbook, worksheet1, "Lista de Inscritos");
 
-            // Generar e insertar Hoja 2
             const worksheet2 = XLSX.utils.json_to_sheet(datosExcelHoja2);
-            XLSX.utils.book_append_sheet(workbook, worksheet2, "Registro de Pagos");
+            XLSX.utils.book_append_sheet(workbook, worksheet2, "Reporte de Depósitos");
 
             const fecha = new Date().toISOString().slice(0, 10);
             const sufijo = vistaActual === 'activos' ? "ACTIVOS" : `HISTORICO_${cursoFiltro.replace(/\s+/g, '_')}`;
-            XLSX.writeFile(workbook, `Inscritos_PAA_${sufijo}_${fecha}.xlsx`);
+            XLSX.writeFile(workbook, `Reporte_Depositos_PAA_${sufijo}_${fecha}.xlsx`);
         };
 
         document.getElementById('inputBuscar').addEventListener('input', renderizarSegunVista);
