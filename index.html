@@ -1036,7 +1036,6 @@
                 return;
             }
 
-            // Variable para la imagen del logo (opcional, protegida con try/catch)
             const logoBase64 = null;
 
             const workbook = new ExcelJS.Workbook();
@@ -1313,21 +1312,13 @@
                 });
             });
 
-            // ==================== HOJA 3: REGISTROS CSV (BASE COMPLETA) ====================
+            // ==================== HOJA 3: REGISTROS CSV (primer_nombre, apellido_paterno, email) ====================
             const ws3 = workbook.addWorksheet('Registros_CSV');
 
             ws3.columns = [
-                { header: 'Cédula', key: 'cedula', width: 16 },
-                { header: 'Nombre', key: 'nombre', width: 20 },
-                { header: 'Apellido', key: 'apellido', width: 20 },
-                { header: 'Teléfono', key: 'telefono', width: 16 },
-                { header: 'Correo', key: 'correo', width: 28 },
-                { header: 'Fecha Transacción', key: 'fecha_transaccion', width: 18 },
-                { header: 'N° Referencia', key: 'numero_referencia', width: 18 },
-                { header: 'Turno', key: 'turno', width: 16 },
-                { header: 'Creado Por', key: 'creado_por', width: 20 },
-                { header: 'Modificado Por', key: 'modificado_por', width: 20 },
-                { header: 'Curso / Estado', key: 'nombre_curso', width: 20 }
+                { header: 'primer_nombre', key: 'primer_nombre', width: 22 },
+                { header: 'apellido_paterno', key: 'apellido_paterno', width: 22 },
+                { header: 'email', key: 'email', width: 30 }
             ];
 
             const rowHeader3 = ws3.getRow(1);
@@ -1345,23 +1336,15 @@
 
             datosFiltrados.forEach((est) => {
                 const row3 = ws3.addRow({
-                    cedula: est.cedula || '',
-                    nombre: est.nombre || '',
-                    apellido: est.apellido || '',
-                    telefono: est.telefono || '',
-                    correo: est.correo || '',
-                    fecha_transaccion: est.fecha_transaccion || '',
-                    numero_referencia: est.numero_referencia || '',
-                    turno: est.turno || '',
-                    creado_por: est.creado_por || 'SIU',
-                    modificado_por: est.modificado_por || '',
-                    nombre_curso: est.archivado ? (est.nombre_curso || 'Archivado') : 'Activo'
+                    primer_nombre: est.nombre || '',
+                    apellido_paterno: est.apellido || '',
+                    email: est.correo || ''
                 });
                 row3.height = 18;
 
-                row3.eachCell((cell) => {
+                row3.eachCell((cell, colNumber) => {
                     cell.font = { name: 'Arial', size: 10 };
-                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    cell.alignment = { horizontal: 'left', vertical: 'middle' };
                     cell.border = dataBorder;
                 });
             });
