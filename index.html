@@ -1312,41 +1312,33 @@
                 });
             });
 
-            // ==================== HOJA 3: REGISTROS CSV (primer_nombre, apellido_paterno, email) ====================
+            // ==================== HOJA 3: REGISTROS CSV (DATOS CONCATENADOS EN UNA SOLA CASILLA) ====================
             const ws3 = workbook.addWorksheet('Registros_CSV');
 
             ws3.columns = [
-                { header: 'primer_nombre', key: 'primer_nombre', width: 22 },
-                { header: 'apellido_paterno', key: 'apellido_paterno', width: 22 },
-                { header: 'email', key: 'email', width: 30 }
+                { header: 'primer_nombre,"apellido_paterno","email"', key: 'datos_csv', width: 50 }
             ];
 
             const rowHeader3 = ws3.getRow(1);
             rowHeader3.height = 24;
-            rowHeader3.eachCell((cell) => {
-                cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FF1E293B' }
-                };
-                cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                cell.border = headerBorder;
-            });
+            rowHeader3.getCell(1).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+            rowHeader3.getCell(1).fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF1E293B' }
+            };
+            rowHeader3.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+            rowHeader3.getCell(1).border = headerBorder;
 
             datosFiltrados.forEach((est) => {
-                const row3 = ws3.addRow({
-                    primer_nombre: est.nombre || '',
-                    apellido_paterno: est.apellido || '',
-                    email: est.correo || ''
-                });
+                const csvString = `${(est.nombre || '').trim()},${(est.apellido || '').trim()},${(est.correo || '').trim()}`;
+                const row3 = ws3.addRow({ datos_csv: csvString });
                 row3.height = 18;
 
-                row3.eachCell((cell, colNumber) => {
-                    cell.font = { name: 'Arial', size: 10 };
-                    cell.alignment = { horizontal: 'left', vertical: 'middle' };
-                    cell.border = dataBorder;
-                });
+                const cell = row3.getCell(1);
+                cell.font = { name: 'Arial', size: 10 };
+                cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                cell.border = dataBorder;
             });
 
             const buffer = await workbook.xlsx.writeBuffer();
