@@ -1312,33 +1312,19 @@
                 });
             });
 
-            // ==================== HOJA 3: REGISTROS CSV (DATOS CONCATENADOS EN UNA SOLA CASILLA) ====================
+            // ==================== HOJA 3: REGISTROS CSV (PURA CADENA DE TEXTO PLANO SIN ESTILOS) ====================
             const ws3 = workbook.addWorksheet('Registros_CSV');
 
             ws3.columns = [
                 { header: 'primer_nombre,"apellido_paterno","email"', key: 'datos_csv', width: 50 }
             ];
 
-            const rowHeader3 = ws3.getRow(1);
-            rowHeader3.height = 24;
-            rowHeader3.getCell(1).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-            rowHeader3.getCell(1).fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF1E293B' }
-            };
-            rowHeader3.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
-            rowHeader3.getCell(1).border = headerBorder;
+            // Forzar formato de texto plano sin colores, negritas ni bordes
+            ws3.getColumn(1).numFmt = '@';
 
             datosFiltrados.forEach((est) => {
                 const csvString = `${(est.nombre || '').trim()},${(est.apellido || '').trim()},${(est.correo || '').trim()}`;
-                const row3 = ws3.addRow({ datos_csv: csvString });
-                row3.height = 18;
-
-                const cell = row3.getCell(1);
-                cell.font = { name: 'Arial', size: 10 };
-                cell.alignment = { horizontal: 'left', vertical: 'middle' };
-                cell.border = dataBorder;
+                ws3.addRow({ datos_csv: csvString });
             });
 
             const buffer = await workbook.xlsx.writeBuffer();
